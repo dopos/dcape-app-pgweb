@@ -1,0 +1,25 @@
+version: "3.2"
+services:
+
+  www:
+    image: ${IMAGE}:${IMAGE_VER}
+    command:
+      pgweb --bind=0.0.0.0
+    restart: always
+    networks:
+      - lan
+    labels:
+      - "traefik.enable=true"
+      - "traefik.port=8081"
+      - "traefik.frontend.rule=Host:${APP_SITE}"
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - DATABASE_URL=${DB_DSN}
+      - SESSIONS=1
+
+networks:
+  lan:
+    external:
+      name: ${DCAPE_NET}
