@@ -1,25 +1,14 @@
-version: "3.2"
+# custom app config
+# overrides DCAPE/apps/drone/dcape-app/docker-compose.yml
+
+version: '2'
+
 services:
-
-  www:
-    image: ${IMAGE}:${IMAGE_VER}
-    command:
-      pgweb --bind=0.0.0.0
-    restart: always
-    networks:
-      - lan
+  app:
     labels:
-      - "traefik.enable=true"
-      - "traefik.port=8081"
-      - "traefik.frontend.rule=Host:${APP_SITE}"
-    volumes:
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
+      - "traefik.http.routers.${APP_TAG}.middlewares=narra" # Require gitea auth
     environment:
-      - DATABASE_URL=${DB_DSN}
-      - SESSIONS=1
-
-networks:
-  lan:
-    external:
-      name: ${DCAPE_NET}
+      - PGWEB_DATABASE_URL=postgres://${PGUSER}:${PGPASSWORD}@db/${PGDATABASE}?sslmode=disable
+    healthcheck:
+      test: ["CMD", "nc", "-vz", "127.0.0.1", "8081"]
+      interval: 5s
